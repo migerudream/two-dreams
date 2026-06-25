@@ -2,87 +2,166 @@
 <html lang="ja">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>ふたりの夢リスト</title>
   <style>
-    /* スマホで見やすいフォントサイズと中央配置 */
-    body { font-family: sans-serif; background: #fdf6f0; color: #4a4a4a; margin: 0; padding: 15px; display: flex; flex-direction: column; align-items: center; }
-    
-    /* コンテナの幅をスマホに合わせて制限 */
-    #main-container { width: 100%; max-width: 500px; }
-    
-    h1 { text-align: center; color: #d4a373; font-size: 24px; margin-bottom: 20px; }
-    
-    .card { background: white; border-radius: 15px; padding: 20px; margin-bottom: 20px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
-    
-    .menu, .filter-menu { text-align: center; margin-bottom: 20px; display: flex; justify-content: center; flex-wrap: wrap; }
-    
-    button { padding: 12px 20px; margin: 5px; cursor: pointer; border-radius: 8px; border: none; background: #d4a373; color: white; font-size: 16px; font-weight: bold; }
-    
-    .btn-achieve { background: #ffb703; color: #000; }
-    .btn-delete { background: #ff6b6b; font-size: 14px; }
-    .btn-edit { background: #a8dadc; color: #1d3557; font-size: 14px; }
-    .btn-url { background: #457b9d; font-size: 14px; width: 100%; margin-top: 10px; }
-    
-    .btn-filter { background: #e9edc9; color: #4a4a4a; font-size: 14px; }
+    body { font-family: sans-serif; background: #fdf6f0; color: #4a4a4a; margin: 0; padding: 20px; }
+    h1 { text-align: center; color: #d4a373; margin-bottom: 10px; }
+    .card { background: white; border-radius: 12px; padding: 15px; margin-bottom: 15px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
+    .menu, .filter-menu { text-align: center; margin-bottom: 15px; }
+    button { padding: 8px 15px; margin: 3px; cursor: pointer; border-radius: 5px; border: none; background: #d4a373; color: white; font-size: 14px; }
+    .btn-achieve { background: #ffb703; color: #000; font-weight: bold; }
+    .btn-delete { background: #ff6b6b; font-size: 11px; }
+    .btn-edit { background: #a8dadc; color: #1d3557; font-size: 11px; }
+    .btn-url { background: #457b9d; font-size: 11px; }
+    .btn-filter { background: #e9edc9; color: #4a4a4a; font-size: 12px; }
     .btn-filter.active { background: #ccd5ae; font-weight: bold; }
-    
     .hidden { display: none; }
-    
-    input, select, textarea { display: block; width: 100%; margin: 15px 0; padding: 15px; box-sizing: border-box; border: 2px solid #eee; border-radius: 10px; font-size: 16px; }
-    
-    .tag { font-size: 14px; color: #999; }
-    h3 { font-size: 20px; margin: 10px 0; }
-    .heart { color: #ff4d6d; font-size: 20px; }
-    .memo-text { font-size: 16px; color: #555; background: #f9f9f9; padding: 12px; border-radius: 10px; margin: 10px 0; border-left: 5px solid #d4a373; }
+    input, select, textarea { display: block; width: 100%; margin: 10px 0; padding: 8px; box-sizing: border-box; border: 1px solid #ddd; border-radius: 5px; }
+    .tag { font-size: 12px; color: #999; }
+    .heart { color: #ff4d6d; }
+    .memo-text { font-size: 13px; color: #666; background: #f9f9f9; padding: 8px; border-radius: 5px; margin: 8px 0; border-left: 3px solid #d4a373; }
   </style>
 </head>
 <body>
-  <div id="main-container">
-    <h1>✨ ふたりの夢リスト ✨</h1>
-    
-    <div class="menu">
-      <button onclick="showSection('list')">夢を見る</button>
-      <button onclick="showSection('done')">かなえた思い出</button>
-      <button onclick="showSection('input')">新しい夢を入力</button>
-    </div>
+  <h1>✨ ふたりの夢リスト ✨</h1>
+  
+  <div class="menu">
+    <button onclick="showSection('list')">夢を見る</button>
+    <button onclick="showSection('done')">かなえた思い出</button>
+    <button onclick="showSection('input')">新しい夢を入力</button>
+  </div>
 
-    <div id="filter-area" class="filter-menu hidden">
-      <button class="btn-filter active" onclick="setFilter('全部')">全部</button>
-      <button class="btn-filter" onclick="setFilter('食')">食</button>
-      <button class="btn-filter" onclick="setFilter('場所')">場所</button>
-      <button class="btn-filter" onclick="setFilter('したいこと')">したいこと</button>
-      <button class="btn-filter" onclick="setFilter('欲しいもの')">欲しいもの</button>
-    </div>
+  <div id="filter-area" class="filter-menu hidden">
+    <button class="btn-filter active" onclick="setFilter('全部')">全部</button>
+    <button class="btn-filter" onclick="setFilter('食')">食</button>
+    <button class="btn-filter" onclick="setFilter('場所')">場所</button>
+    <button class="btn-filter" onclick="setFilter('したいこと')">したいこと</button>
+    <button class="btn-filter" onclick="setFilter('欲しいもの')">欲しいもの</button>
+  </div>
 
-    <div id="list-section">
-      <div id="app">読み込み中...</div>
-    </div>
+  <div id="list-section">
+    <div id="app">読み込み中...</div>
+  </div>
 
-    <div id="input-section" class="hidden">
-      <div class="card">
-        <h3 id="form-title">新しい夢を入力</h3>
-        <select id="category">
-          <option value="食">食</option><option value="場所">場所</option>
-          <option value="したいこと">したいこと</option><option value="欲しいもの">欲しいもの</option>
-        </select>
-        <input type="text" id="title" placeholder="なにをする？ (必須)">
-        <input type="url" id="url" placeholder="参考URL">
-        <textarea id="memo" placeholder="ふたりのメモ" rows="3"></textarea>
-        <select id="rating">
-          <option value="1">♡</option><option value="2">♡♡</option><option value="3">♡♡♡</option>
-          <option value="4">♡♡♡♡</option><option value="5">♡♡♡♡♡</option>
-        </select>
-        <button onclick="registerData()" id="reg-btn" style="width:100%; padding:15px;">登録する</button>
-      </div>
+  <div id="input-section" class="hidden">
+    <div class="card">
+      <h3 id="form-title">新しい夢を入力</h3>
+      <label>カテゴリ</label>
+      <select id="category">
+        <option value="食">食</option><option value="場所">場所</option>
+        <option value="したいこと">したいこと</option><option value="欲しいもの">欲しいもの</option>
+      </select>
+      <input type="text" id="title" placeholder="なにをする？ (必須)">
+      <input type="url" id="url" placeholder="参考URL (https://...)">
+      <textarea id="memo" placeholder="ふたりのメモ" rows="3"></textarea>
+      <label>かなえたい度</label>
+      <select id="rating">
+        <option value="1">♡</option><option value="2">♡♡</option><option value="3">♡♡♡</option>
+        <option value="4">♡♡♡♡</option><option value="5">♡♡♡♡♡</option>
+      </select>
+      <button onclick="registerData()" id="reg-btn" style="width:100%; margin-top:10px; padding:12px;">登録する</button>
     </div>
   </div>
 
   <script>
-    // ... スクリプト部分は以前と同じです。省略して記載します ...
     const API_URL = 'https://script.google.com/macros/s/AKfycbzGnGqltfuvz-Z49Ni-3XCxErJo7g4i5z_Xjaqw_pRUjB4Jr9SIfGrOpi0YlW12RUGw/exec';
-    // ... (以下、renderListなどのロジックは先ほどのものを使用) ...
-    // ※貼り付け時は省略せず、renderList等の関数も含めて貼り付けてください
+    let allData = [];
+    let currentMode = 'list';
+    let currentFilter = '全部';
+    let editingRow = null;
+
+    function showSection(section) {
+      if(section !== 'input') { editingRow = null; clearForm(); }
+      currentMode = (section === 'done') ? 'done' : 'list';
+      document.getElementById('list-section').className = (section === 'input') ? 'hidden' : '';
+      document.getElementById('input-section').className = (section === 'input') ? '' : 'hidden';
+      document.getElementById('filter-area').className = (section === 'list') ? 'filter-menu' : 'hidden';
+      if(section === 'input') {
+        document.getElementById('form-title').innerText = editingRow ? '夢を編集' : '新しい夢を入力';
+        document.getElementById('reg-btn').innerText = editingRow ? '更新する' : '登録する';
+      } else { renderList(); }
+    }
+
+    function clearForm() {
+      document.getElementById('title').value = '';
+      document.getElementById('url').value = '';
+      document.getElementById('memo').value = '';
+      document.getElementById('rating').value = '1';
+    }
+
+    function editData(item) {
+      editingRow = item.rowIndex;
+      document.getElementById('category').value = item['カテゴリ'];
+      document.getElementById('title').value = item['What'];
+      document.getElementById('url').value = item['URL'] || '';
+      document.getElementById('memo').value = item['メモ'] || '';
+      document.getElementById('rating').value = item['行きたい度'];
+      showSection('input');
+    }
+
+    function renderList() {
+      const app = document.getElementById('app');
+      const filtered = allData.filter(item => {
+        const isStatusMatch = (currentMode === 'done') ? item['ステータス'] === 'かなえた' : item['ステータス'] !== 'かなえた';
+        const isCatMatch = (currentFilter === '全部' || item['カテゴリ'] === currentFilter);
+        return isStatusMatch && isCatMatch;
+      });
+
+      app.innerHTML = filtered.length === 0 ? "<p style='text-align:center;'>まだ何もないよ</p>" : filtered.reverse().map(item => `
+        <div class="card">
+          <span class="tag">[${item['カテゴリ']}]</span>
+          <h3>${item['What'] || '無題'}</h3>
+          ${item['メモ'] ? `<div class="memo-text">${item['メモ']}</div>` : ''}
+          <p>かなえたい度: <span class="heart">${'♡'.repeat(item['行きたい度'] || 0)}</span></p>
+          <div style="margin-top:10px;">
+            ${item['URL'] ? `<button class="btn-url" onclick="window.open('${item['URL']}', '_blank')">🔗 サイトを見る</button>` : ''}
+            ${currentMode === 'list' ? `
+              <button class="btn-achieve" onclick="actionData('achieve', ${item.rowIndex})">かなえた！</button>
+              <button class="btn-edit" onclick='editData(${JSON.stringify(item)})'>編集</button>
+              <button class="btn-delete" onclick="actionData('delete', ${item.rowIndex})">削除</button>
+            ` : '🎉 達成済み！'}
+          </div>
+        </div>`).join('');
+    }
+
+    function registerData() {
+      const data = {
+        action: editingRow ? 'update' : 'add',
+        rowIndex: editingRow,
+        category: document.getElementById('category').value,
+        title: document.getElementById('title').value,
+        url: document.getElementById('url').value,
+        rating: document.getElementById('rating').value,
+        memo: document.getElementById('memo').value
+      };
+      if(!data.title) return alert('タイトルを入力してね');
+      fetch(API_URL, { method: 'POST', body: JSON.stringify(data) }).then(() => {
+        alert('保存したよ！');
+        location.reload();
+      });
+    }
+
+    function actionData(action, rowIndex) {
+      if (!confirm('実行しますか？')) return;
+      fetch(API_URL, { method: 'POST', body: JSON.stringify({ action: action, rowIndex: rowIndex }) })
+        .then(() => location.reload());
+    }
+
+    function setFilter(cat) {
+      currentFilter = cat;
+      document.querySelectorAll('.btn-filter').forEach(b => b.classList.remove('active'));
+      event.target.classList.add('active');
+      renderList();
+    }
+
+    let auth = sessionStorage.getItem('auth');
+    if (!auth) {
+      auth = prompt("合言葉を教えてね");
+      if (auth === "ぱんなこった") {
+        sessionStorage.setItem('auth', auth);
+        fetch(API_URL).then(res => res.json()).then(data => { allData = data; renderList(); });
+      } else { document.body.innerHTML = "<h1>アクセスできません</h1>"; }
+    } else { fetch(API_URL).then(res => res.json()).then(data => { allData = data; renderList(); }); }
   </script>
 </body>
 </html>
