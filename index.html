@@ -6,11 +6,12 @@
   <style>
     body { font-family: sans-serif; background: #fdf6f0; color: #4a4a4a; margin: 0; padding: 20px; }
     h1 { text-align: center; color: #d4a373; margin-bottom: 10px; }
-    .card { background: white; border-radius: 12px; padding: 15px; margin-bottom: 15px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); position: relative; }
+    .card { background: white; border-radius: 12px; padding: 15px; margin-bottom: 15px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
     .menu, .filter-menu { text-align: center; margin-bottom: 15px; }
     button { padding: 8px 15px; margin: 3px; cursor: pointer; border-radius: 5px; border: none; background: #d4a373; color: white; font-size: 14px; }
     .btn-achieve { background: #ffb703; color: #000; font-weight: bold; }
     .btn-delete { background: #ff6b6b; font-size: 11px; }
+    .btn-edit { background: #a8dadc; color: #1d3557; font-size: 11px; }
     .btn-filter { background: #e9edc9; color: #4a4a4a; font-size: 12px; }
     .btn-filter.active { background: #ccd5ae; font-weight: bold; }
     .hidden { display: none; }
@@ -42,20 +43,20 @@
 
   <div id="input-section" class="hidden">
     <div class="card">
-      <h3>新しい夢を入力</h3>
-      <select id="category" onchange="checkOther(this)">
+      <h3 id="form-title">新しい夢を入力</h3>
+      <select id="category">
         <option value="食">食</option><option value="場所">場所</option>
         <option value="したいこと">したいこと</option><option value="欲しいもの">欲しいもの</option>
-        <option value="その他">その他（新規入力）</option>
       </select>
-      <input type="text" id="otherCategory" class="hidden" placeholder="新しいカテゴリ名">
       <input type="text" id="title" placeholder="なにをする？ (必須)">
+      <input type="text" id="url" placeholder="参考URL">
+      <input type="text" id="memo" placeholder="メモ">
       <label>かなえたい度</label>
       <select id="rating">
         <option value="1">♡</option><option value="2">♡♡</option><option value="3">♡♡♡</option>
         <option value="4">♡♡♡♡</option><option value="5">♡♡♡♡♡</option>
       </select>
-      <button onclick="registerData()">登録する</button>
+      <button onclick="registerData()" id="reg-btn">登録する</button>
     </div>
   </div>
 
@@ -64,29 +65,28 @@
     let allData = [];
     let currentMode = 'list';
     let currentFilter = '全部';
+    let editingRow = null;
 
     function showSection(section) {
+      if(section !== 'input') editingRow = null;
       currentMode = (section === 'done') ? 'done' : 'list';
       document.getElementById('list-section').className = (section === 'input') ? 'hidden' : '';
       document.getElementById('input-section').className = (section === 'input') ? '' : 'hidden';
       document.getElementById('filter-area').className = (section === 'list') ? 'filter-menu' : 'hidden';
-      if(section !== 'input') renderList();
+      if(section === 'input') {
+        document.getElementById('form-title').innerText = editingRow ? '夢を編集' : '新しい夢を入力';
+        document.getElementById('reg-btn').innerText = editingRow ? '更新する' : '登録する';
+      } else { renderList(); }
     }
 
-    function setFilter(cat) {
-      currentFilter = cat;
-      document.querySelectorAll('.btn-filter').forEach(b => b.classList.remove('active'));
-      event.target.classList.add('active');
-      renderList();
-    }
-
-    function checkOther(select) { document.getElementById('otherCategory').className = (select.value === 'その他') ? '' : 'hidden'; }
-
-    function loadData() {
-      fetch(API_URL).then(res => res.json()).then(data => {
-        allData = data;
-        renderList();
-      });
+    function editData(item) {
+      editingRow = item.rowIndex;
+      document.getElementById('category').value = item['カテゴリ'];
+      document.getElementById('title').value = item['What'];
+      document.getElementById('url').value = item['URL'] || '';
+      document.getElementById('memo').value = item['メモ'] || '';
+      document.getElementById('rating').value = item['行きたい度'];
+      showSection('input');
     }
 
     function renderList() {
@@ -102,39 +102,45 @@
           <span class="tag">[${item['カテゴリ']}]</span>
           <h3>${item['What'] || '無題'}</h3>
           <p>かなえたい度: <span class="heart">${'♡'.repeat(item['行きたい度'] || 0)}</span></p>
-          ${currentMode === 'list' ? `<button class="btn-achieve" onclick="actionData('achieve', ${item.rowIndex})">かなえた！</button>` : '🎉 達成済み！'}
+          ${currentMode === 'list' ? `
+            <button class="btn-achieve" onclick="actionData('achieve', ${item.rowIndex})">かなえた！</button>
+            <button class="btn-edit" onclick='editData(${JSON.stringify(item)})'>編集</button>
+          ` : '🎉 達成済み！'}
           <button class="btn-delete" onclick="actionData('delete', ${item.rowIndex})">削除</button>
         </div>`).join('');
+    }
+
+    function registerData() {
+      const data = {
+        action: editingRow ? 'update' : 'add',
+        rowIndex: editingRow,
+        category: document.getElementById('category').value,
+        title: document.getElementById('title').value,
+        url: document.getElementById('url').value,
+        rating: document.getElementById('rating').value,
+        memo: document.getElementById('memo').value
+      };
+      fetch(API_URL, { method: 'POST', body: JSON.stringify(data) }).then(() => {
+        alert('保存したよ！');
+        location.reload();
+      });
     }
 
     function actionData(action, rowIndex) {
       if (!confirm('実行しますか？')) return;
       fetch(API_URL, { method: 'POST', body: JSON.stringify({ action: action, rowIndex: rowIndex }) })
-        .then(() => loadData());
+        .then(() => location.reload());
     }
 
-    function registerData() {
-      const catSelect = document.getElementById('category').value;
-      const data = {
-        category: (catSelect === 'その他') ? document.getElementById('otherCategory').value : catSelect,
-        title: document.getElementById('title').value,
-        rating: document.getElementById('rating').value
-      };
-      if(!data.title) return alert('タイトルを入力してね');
-      fetch(API_URL, { method: 'POST', body: JSON.stringify(data) }).then(() => {
-        alert('登録したよ！');
-        location.reload();
-      });
-    }
-
+    // ... (認証処理はそのまま) ...
     let auth = sessionStorage.getItem('auth');
     if (!auth) {
       auth = prompt("合言葉を教えてね");
       if (auth === "ぱんなこった") {
         sessionStorage.setItem('auth', auth);
-        loadData();
+        fetch(API_URL).then(res => res.json()).then(data => { allData = data; renderList(); });
       } else { document.body.innerHTML = "<h1>アクセスできません</h1>"; }
-    } else { loadData(); }
+    } else { fetch(API_URL).then(res => res.json()).then(data => { allData = data; renderList(); }); }
   </script>
 </body>
 </html>
