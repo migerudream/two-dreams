@@ -6,7 +6,7 @@
   <style>
     body { font-family: sans-serif; background: #fdf6f0; color: #4a4a4a; margin: 0; padding: 20px; }
     h1 { text-align: center; color: #d4a373; margin-bottom: 10px; }
-    .card { background: white; border-radius: 12px; padding: 15px; margin-bottom: 15px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
+    .card { background: white; border-radius: 12px; padding: 15px; margin-bottom: 15px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); position: relative; }
     .menu, .filter-menu { text-align: center; margin-bottom: 15px; }
     button { padding: 8px 15px; margin: 3px; cursor: pointer; border-radius: 5px; border: none; background: #d4a373; color: white; font-size: 14px; }
     .btn-achieve { background: #ffb703; color: #000; font-weight: bold; }
@@ -89,6 +89,13 @@
       showSection('input');
     }
 
+    function setFilter(cat) {
+      currentFilter = cat;
+      document.querySelectorAll('.btn-filter').forEach(b => b.classList.remove('active'));
+      event.target.classList.add('active');
+      renderList();
+    }
+
     function renderList() {
       const app = document.getElementById('app');
       const filtered = allData.filter(item => {
@@ -105,8 +112,8 @@
           ${currentMode === 'list' ? `
             <button class="btn-achieve" onclick="actionData('achieve', ${item.rowIndex})">かなえた！</button>
             <button class="btn-edit" onclick='editData(${JSON.stringify(item)})'>編集</button>
+            <button class="btn-delete" onclick="actionData('delete', ${item.rowIndex})">削除</button>
           ` : '🎉 達成済み！'}
-          <button class="btn-delete" onclick="actionData('delete', ${item.rowIndex})">削除</button>
         </div>`).join('');
     }
 
@@ -132,7 +139,6 @@
         .then(() => location.reload());
     }
 
-    // ... (認証処理はそのまま) ...
     let auth = sessionStorage.getItem('auth');
     if (!auth) {
       auth = prompt("合言葉を教えてね");
