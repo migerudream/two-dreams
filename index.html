@@ -16,43 +16,52 @@
 </head>
 <body>
   <h1>✨ 二人の夢リスト ✨</h1>
-  
   <div class="menu">
     <button onclick="showSection('list')">一覧を見る</button>
     <button onclick="showSection('input')">新規入力する</button>
   </div>
-
-  <div id="list-section">
-    <div id="app">読み込み中...</div>
-  </div>
-
+  <div id="list-section"><div id="app">読み込み中...</div></div>
   <div id="input-section" class="hidden">
     <div class="card">
       <label>カテゴリ</label>
       <select id="category" onchange="checkOther(this)">
-        <option value="食">食</option>
-        <option value="場所">場所</option>
-        <option value="したいこと">したいこと</option>
-        <option value="欲しいもの">欲しいもの</option>
+        <option value="食">食</option><option value="場所">場所</option>
+        <option value="したいこと">したいこと</option><option value="欲しいもの">欲しいもの</option>
         <option value="その他">新規追加（その他）</option>
       </select>
-      <input type="text" id="otherCategory" class="hidden" placeholder="新しいカテゴリ名を入力">
+      <input type="text" id="otherCategory" class="hidden" placeholder="新しいカテゴリ名">
       <input type="text" id="title" placeholder="What (タイトル) (必須)">
-      <input type="number" id="rating" placeholder="行きたい度 (1-5)" min="1" max="5">
+      <label>かなえたい度</label>
+      <select id="rating">
+        <option value="1">♡</option><option value="2">♡♡</option><option value="3">♡♡♡</option>
+        <option value="4">♡♡♡♡</option><option value="5">♡♡♡♡♡</option>
+      </select>
       <button onclick="registerData()">登録する</button>
     </div>
   </div>
-
   <script>
     const API_URL = 'https://script.google.com/macros/s/AKfycbzGnGqltfuvz-Z49Ni-3XCxErJo7g4i5z_Xjaqw_pRUjB4Jr9SIfGrOpi0YlW12RUGw/exec';
+    
+    // 合言葉をメモリに保持
+    let authPassword = sessionStorage.getItem('auth');
 
     function showSection(section) {
       document.getElementById('list-section').style.display = (section === 'list') ? 'block' : 'none';
       document.getElementById('input-section').style.display = (section === 'input') ? 'block' : 'none';
+      if(section === 'list') loadList();
     }
 
-    function checkOther(select) {
-      document.getElementById('otherCategory').className = (select.value === 'その他') ? '' : 'hidden';
+    function checkOther(select) { document.getElementById('otherCategory').className = (select.value === 'その他') ? '' : 'hidden'; }
+
+    function loadList() {
+      fetch(API_URL).then(res => res.json()).then(data => {
+        document.getElementById('app').innerHTML = data.map(item => `
+          <div class="card">
+            <h3>${item['What'] || '無題'} (${item['カテゴリ'] || '未分類'})</h3>
+            <p>かなえたい度: ${'♡'.repeat(item['行きたい度'] || 0)}</p>
+            <button class="delete-btn" onclick="deleteData(${item.rowIndex})">削除</button>
+          </div>`).join('');
+      });
     }
 
     function registerData() {
@@ -62,33 +71,25 @@
         title: document.getElementById('title').value,
         rating: document.getElementById('rating').value
       };
-      if(!data.title) { alert('タイトルを入力してください'); return; }
-      fetch(API_URL, { method: 'POST', body: JSON.stringify(data) })
-        .then(() => { alert('登録しました！'); location.reload(); });
+      fetch(API_URL, { method: 'POST', body: JSON.stringify(data) }).then(() => {
+        alert('登録しました！');
+        showSection('list');
+      });
     }
 
     function deleteData(rowIndex) {
       if (!confirm('本当に削除しますか？')) return;
       fetch(API_URL, { method: 'POST', body: JSON.stringify({ action: 'delete', rowIndex: rowIndex }) })
-        .then(() => { alert('削除しました'); location.reload(); });
+        .then(() => { loadList(); });
     }
 
-    const password = prompt("二人だけの合言葉を入力してね");
-    if (password === "ぱんなこった") {
-      fetch(API_URL)
-        .then(res => res.json())
-        .then(data => {
-          document.getElementById('app').innerHTML = data.map(item => `
-            <div class="card">
-              <h3>${item['What'] || '無題'} (${item['カテゴリ'] || '未分類'})</h3>
-              <p>行きたい度: ${'★'.repeat(item['行きたい度'] || 0)}</p>
-              <button class="delete-btn" onclick="deleteData(${item.rowIndex})">削除</button>
-            </div>
-          `).join('');
-        });
-    } else {
-      document.body.innerHTML = "<h1>アクセスできません</h1>";
-    }
+    if (!authPassword) {
+      authPassword = prompt("二人だけの合言葉を入力してね");
+      if (authPassword === "ぱんなこった") {
+        sessionStorage.setItem('auth', authPassword);
+        loadList();
+      } else { document.body.innerHTML = "<h1>アクセスできません</h1>"; }
+    } else { loadList(); }
   </script>
 </body>
 </html>
