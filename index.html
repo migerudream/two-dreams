@@ -7,20 +7,41 @@
     body { font-family: sans-serif; background: #fdf6f0; color: #4a4a4a; margin: 0; padding: 20px; }
     h1 { text-align: center; color: #d4a373; }
     .card { background: white; border-radius: 12px; padding: 15px; margin-bottom: 15px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
+    .menu { text-align: center; margin-bottom: 20px; }
+    button { padding: 10px 20px; margin: 5px; cursor: pointer; border-radius: 5px; border: none; background: #d4a373; color: white; }
+    .hidden { display: none; }
   </style>
 </head>
 <body>
   <h1>✨ 二人の夢リスト ✨</h1>
-  <div id="app">読み込み中...</div>
+  
+  <div class="menu">
+    <button onclick="showSection('list')">一覧を見る</button>
+    <button onclick="showSection('input')">新規入力する</button>
+  </div>
+
+  <div id="list-section">
+    <div id="app">読み込み中...</div>
+  </div>
+
+  <div id="input-section" class="hidden">
+    <div class="card">
+      <p>※ここはまだ準備中です（GASの設定が必要です）</p>
+      <input type="text" id="category" placeholder="カテゴリ (例:食べる)">
+      <input type="text" id="title" placeholder="タイトル">
+      <button onclick="alert('GAS設定後に動くようになります！')">登録する</button>
+    </div>
+  </div>
 
   <script>
-    // 1. パスワード認証を先に実行
+    function showSection(section) {
+      document.getElementById('list-section').style.display = (section === 'list') ? 'block' : 'none';
+      document.getElementById('input-section').style.display = (section === 'input') ? 'block' : 'none';
+    }
+
     const password = prompt("二人だけの合言葉を入力してね");
-
     if (password === "ぱんなこった") {
-      // 2. 正解したらデータを取得
       const API_URL = 'https://script.google.com/macros/s/AKfycbzGnGqltfuvz-Z49Ni-3XCxErJo7g4i5z_Xjaqw_pRUjB4Jr9SIfGrOpi0YlW12RUGw/exec';
-
       fetch(API_URL)
         .then(res => res.json())
         .then(data => {
@@ -32,12 +53,8 @@
               <a href="${item['URL']}" target="_blank">詳細を見る</a>
             </div>
           `).join('');
-        })
-        .catch(err => {
-          document.getElementById('app').innerHTML = "データの読み込みに失敗しました。";
         });
     } else {
-      // 3. 不正解の場合
       document.body.innerHTML = "<h1>アクセスできません</h1>";
       alert("合言葉が違います！");
     }
