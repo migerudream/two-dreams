@@ -26,7 +26,7 @@
   <div class="menu">
     <button onclick="showSection('list')">夢を見る</button>
     <button onclick="showSection('done')">かなえた思い出</button>
-    <button onclick="showSection('input')">新しく登録</button>
+    <button onclick="showSection('input')">新しい夢を入力</button>
   </div>
 
   <div id="filter-area" class="filter-menu hidden">
@@ -43,7 +43,7 @@
 
   <div id="input-section" class="hidden">
     <div class="card">
-      <h3>新しい夢を登録</h3>
+      <h3>新しい夢を入力</h3>
       <select id="category" onchange="checkOther(this)">
         <option value="食">食</option><option value="場所">場所</option>
         <option value="したいこと">したいこと</option><option value="欲しいもの">欲しいもの</option>
@@ -63,7 +63,7 @@
   <script>
     const API_URL = 'https://script.google.com/macros/s/AKfycbzGnGqltfuvz-Z49Ni-3XCxErJo7g4i5z_Xjaqw_pRUjB4Jr9SIfGrOpi0YlW12RUGw/exec';
     let allData = [];
-    let currentMode = 'list'; // 'list' or 'done'
+    let currentMode = 'list';
     let currentFilter = '全部';
 
     function showSection(section) {
@@ -134,7 +134,6 @@
       });
     }
 
-    // 認証
     let auth = sessionStorage.getItem('auth');
     if (!auth) {
       auth = prompt("合言葉を教えてね");
