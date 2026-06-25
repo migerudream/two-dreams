@@ -10,6 +10,7 @@
     .menu { text-align: center; margin-bottom: 20px; }
     button { padding: 10px 20px; margin: 5px; cursor: pointer; border-radius: 5px; border: none; background: #d4a373; color: white; }
     .hidden { display: none; }
+    input { display: block; width: 100%; margin: 10px 0; padding: 8px; }
   </style>
 </head>
 <body>
@@ -26,55 +27,51 @@
 
   <div id="input-section" class="hidden">
     <div class="card">
-      <p>※ここはまだ準備中です（GASの設定が必要です）</p>
-      <input type="text" id="category" placeholder="カテゴリ (例:食べる)">
-      <input type="text" id="title" placeholder="タイトル">
-      <button onclick="alert('GAS設定後に動くようになります！')">登録する</button>
+      <input type="text" id="category" placeholder="カテゴリ (例: 食べる)">
+      <input type="text" id="title" placeholder="タイトル (必須)">
+      <input type="number" id="rating" placeholder="行きたい度 (1-5)" min="1" max="5">
+      <button onclick="registerData()">登録する</button>
     </div>
   </div>
 
   <script>
-    // 画面切り替え関数
+    const API_URL = 'https://script.google.com/macros/s/AKfycbzGnGqltfuvz-Z49Ni-3XCxErJo7g4i5z_Xjaqw_pRUjB4Jr9SIfGrOpi0YlW12RUGw/exec';
+
     function showSection(section) {
       document.getElementById('list-section').style.display = (section === 'list') ? 'block' : 'none';
       document.getElementById('input-section').style.display = (section === 'input') ? 'block' : 'none';
     }
 
-    // パスワード認証
+    function registerData() {
+      const data = {
+        category: document.getElementById('category').value,
+        title: document.getElementById('title').value,
+        rating: document.getElementById('rating').value
+      };
+      
+      fetch(API_URL, {
+        method: 'POST',
+        body: JSON.stringify(data)
+      }).then(() => {
+        alert('登録しました！');
+        location.reload();
+      });
+    }
+
     const password = prompt("二人だけの合言葉を入力してね");
     if (password === "ぱんなこった") {
-      const API_URL = 'https://script.google.com/macros/s/AKfycbzGnGqltfuvz-Z49Ni-3XCxErJo7g4i5z_Xjaqw_pRUjB4Jr9SIfGrOpi0YlW12RUGw/exec';
-      
-      const app = document.getElementById('app');
-      
       fetch(API_URL)
         .then(res => res.json())
         .then(data => {
-          // データが空の場合のケアも含めて表示
-          if (data.length === 0) {
-            app.innerHTML = "<p>まだリストに登録がありません</p>";
-            return;
-          }
-          
-          app.innerHTML = data.map(item => {
-            // タイトルが空の行は表示しない
-            if (!item['タイトル']) return '';
-            
-            return `
-              <div class="card">
-                <h3>${item['タイトル'] || '無題'} (${item['カテゴリ'] || '未分類'})</h3>
-                <p>行きたい度: ${'★'.repeat(item['行きたい度'] || 0)}</p>
-                <a href="${item['URL'] || '#'}" target="_blank">詳細を見る</a>
-              </div>
-            `;
-          }).join('');
-        })
-        .catch(err => {
-          app.innerHTML = "<p>読み込みに失敗しました</p>";
+          document.getElementById('app').innerHTML = data.map(item => `
+            <div class="card">
+              <h3>${item['タイトル'] || '無題'} (${item['カテゴリ'] || '未分類'})</h3>
+              <p>行きたい度: ${'★'.repeat(item['行きたい度'] || 0)}</p>
+            </div>
+          `).join('');
         });
     } else {
       document.body.innerHTML = "<h1>アクセスできません</h1>";
-      alert("合言葉が違います！");
     }
   </script>
 </body>
