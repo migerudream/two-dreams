@@ -53,7 +53,7 @@
       </select>
       <input type="text" id="title" placeholder="なにをする？ (必須)">
       <input type="url" id="url" placeholder="参考URL (https://...)">
-      <textarea id="memo" placeholder="ふたりのメモ（こだわりや行きたい時期など）" rows="3"></textarea>
+      <textarea id="memo" placeholder="ふたりのメモ" rows="3"></textarea>
       <label>かなえたい度</label>
       <select id="rating">
         <option value="1">♡</option><option value="2">♡♡</option><option value="3">♡♡♡</option>
@@ -71,10 +71,7 @@
     let editingRow = null;
 
     function showSection(section) {
-      if(section !== 'input') {
-        editingRow = null;
-        clearForm();
-      }
+      if(section !== 'input') { editingRow = null; clearForm(); }
       currentMode = (section === 'done') ? 'done' : 'list';
       document.getElementById('list-section').className = (section === 'input') ? 'hidden' : '';
       document.getElementById('input-section').className = (section === 'input') ? '' : 'hidden';
@@ -138,10 +135,6 @@
         memo: document.getElementById('memo').value
       };
       if(!data.title) return alert('タイトルを入力してね');
-      
-      document.getElementById('reg-btn').innerText = '保存中...';
-      document.getElementById('reg-btn').disabled = true;
-
       fetch(API_URL, { method: 'POST', body: JSON.stringify(data) }).then(() => {
         alert('保存したよ！');
         location.reload();
@@ -166,16 +159,9 @@
       auth = prompt("合言葉を教えてね");
       if (auth === "ぱんなこった") {
         sessionStorage.setItem('auth', auth);
-        loadData();
+        fetch(API_URL).then(res => res.json()).then(data => { allData = data; renderList(); });
       } else { document.body.innerHTML = "<h1>アクセスできません</h1>"; }
-    } else { loadData(); }
-
-    function loadData() {
-      fetch(API_URL).then(res => res.json()).then(data => {
-        allData = data;
-        renderList();
-      });
-    }
+    } else { fetch(API_URL).then(res => res.json()).then(data => { allData = data; renderList(); }); }
   </script>
 </body>
 </html>
