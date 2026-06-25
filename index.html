@@ -34,25 +34,43 @@
   </div>
 
   <script>
+    // 画面切り替え関数
     function showSection(section) {
       document.getElementById('list-section').style.display = (section === 'list') ? 'block' : 'none';
       document.getElementById('input-section').style.display = (section === 'input') ? 'block' : 'none';
     }
 
+    // パスワード認証
     const password = prompt("二人だけの合言葉を入力してね");
     if (password === "ぱんなこった") {
       const API_URL = 'https://script.google.com/macros/s/AKfycbzGnGqltfuvz-Z49Ni-3XCxErJo7g4i5z_Xjaqw_pRUjB4Jr9SIfGrOpi0YlW12RUGw/exec';
+      
+      const app = document.getElementById('app');
+      
       fetch(API_URL)
         .then(res => res.json())
         .then(data => {
-          const app = document.getElementById('app');
-          app.innerHTML = data.map(item => `
-            <div class="card">
-              <h3>${item['タイトル']} (${item['カテゴリ']})</h3>
-              <p>行きたい度: ${'★'.repeat(item['行きたい度'] || 0)}</p>
-              <a href="${item['URL']}" target="_blank">詳細を見る</a>
-            </div>
-          `).join('');
+          // データが空の場合のケアも含めて表示
+          if (data.length === 0) {
+            app.innerHTML = "<p>まだリストに登録がありません</p>";
+            return;
+          }
+          
+          app.innerHTML = data.map(item => {
+            // タイトルが空の行は表示しない
+            if (!item['タイトル']) return '';
+            
+            return `
+              <div class="card">
+                <h3>${item['タイトル'] || '無題'} (${item['カテゴリ'] || '未分類'})</h3>
+                <p>行きたい度: ${'★'.repeat(item['行きたい度'] || 0)}</p>
+                <a href="${item['URL'] || '#'}" target="_blank">詳細を見る</a>
+              </div>
+            `;
+          }).join('');
+        })
+        .catch(err => {
+          app.innerHTML = "<p>読み込みに失敗しました</p>";
         });
     } else {
       document.body.innerHTML = "<h1>アクセスできません</h1>";
