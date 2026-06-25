@@ -10,7 +10,7 @@
     .menu { text-align: center; margin-bottom: 20px; }
     button { padding: 10px 20px; margin: 5px; cursor: pointer; border-radius: 5px; border: none; background: #d4a373; color: white; }
     .hidden { display: none; }
-    input { display: block; width: 100%; margin: 10px 0; padding: 8px; }
+    input, select { display: block; width: 100%; margin: 10px 0; padding: 8px; box-sizing: border-box; }
   </style>
 </head>
 <body>
@@ -27,7 +27,15 @@
 
   <div id="input-section" class="hidden">
     <div class="card">
-      <input type="text" id="category" placeholder="カテゴリ (例: 食べる)">
+      <label>カテゴリ</label>
+      <select id="category" onchange="checkOther(this)">
+        <option value="食">食</option>
+        <option value="場所">場所</option>
+        <option value="したいこと">したいこと</option>
+        <option value="欲しいもの">欲しいもの</option>
+        <option value="その他">新規追加（その他）</option>
+      </select>
+      <input type="text" id="otherCategory" class="hidden" placeholder="新しいカテゴリ名を入力">
       <input type="text" id="title" placeholder="タイトル (必須)">
       <input type="number" id="rating" placeholder="行きたい度 (1-5)" min="1" max="5">
       <button onclick="registerData()">登録する</button>
@@ -42,20 +50,23 @@
       document.getElementById('input-section').style.display = (section === 'input') ? 'block' : 'none';
     }
 
+    function checkOther(select) {
+      const otherInput = document.getElementById('otherCategory');
+      otherInput.className = (select.value === 'その他') ? '' : 'hidden';
+    }
+
     function registerData() {
+      const catSelect = document.getElementById('category').value;
       const data = {
-        category: document.getElementById('category').value,
+        category: (catSelect === 'その他') ? document.getElementById('otherCategory').value : catSelect,
         title: document.getElementById('title').value,
         rating: document.getElementById('rating').value
       };
       
-      fetch(API_URL, {
-        method: 'POST',
-        body: JSON.stringify(data)
-      }).then(() => {
-        alert('登録しました！');
-        location.reload();
-      });
+      if(!data.title) { alert('タイトルを入力してください'); return; }
+
+      fetch(API_URL, { method: 'POST', body: JSON.stringify(data) })
+        .then(() => { alert('登録しました！'); location.reload(); });
     }
 
     const password = prompt("二人だけの合言葉を入力してね");
