@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <title>二人の夢リスト</title>
+  <style>
+    body { font-family: sans-serif; background: #fdf6f0; color: #4a4a4a; margin: 0; padding: 20px; }
+    h1 { text-align: center; color: #d4a373; }
+    .card { background: white; border-radius: 12px; padding: 15px; margin-bottom: 15px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
+  </style>
+</head>
+<body>
+  <h1>✨ 二人の夢リスト ✨</h1>
+  <div id="app">読み込み中...</div>
+
+  <script>
+    // 1. パスワード認証を先に実行
+    const password = prompt("二人だけの合言葉を入力してね");
+
+    if (password === "ぱんなこった") {
+      // 2. 正解したらデータを取得
+      const API_URL = 'https://script.google.com/macros/s/AKfycbzGnGqltfuvz-Z49Ni-3XCxErJo7g4i5z_Xjaqw_pRUjB4Jr9SIfGrOpi0YlW12RUGw/exec';
+
+      fetch(API_URL)
+        .then(res => res.json())
+        .then(data => {
+          const app = document.getElementById('app');
+          app.innerHTML = data.map(item => `
+            <div class="card">
+              <h3>${item['タイトル']} (${item['カテゴリ']})</h3>
+              <p>行きたい度: ${'★'.repeat(item['行きたい度'] || 0)}</p>
+              <a href="${item['URL']}" target="_blank">詳細を見る</a>
+            </div>
+          `).join('');
+        })
+        .catch(err => {
+          document.getElementById('app').innerHTML = "データの読み込みに失敗しました。";
+        });
+    } else {
+      // 3. 不正解の場合
+      document.body.innerHTML = "<h1>アクセスできません</h1>";
+      alert("合言葉が違います！");
+    }
+  </script>
+</body>
+</html>
